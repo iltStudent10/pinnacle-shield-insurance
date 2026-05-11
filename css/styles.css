@@ -1,0 +1,27 @@
+:root {
+    --brand-blue: #0056b3;
+    --brand-blue-dark: #0a3d80;
+    --surface-muted: #f2f6fa;
+}
+
+body {
+    min-height: 100vh;
+}
+
+.hero {
+    min-height: 360px;
+    background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark));
+}
+
+.tagline {
+    max-width: 760px;
+}
+
+.type-card {
+    background-color: var(--surface-muted);
+    border: 1px solid #d8e3ef;
+}
+
+footer p {
+    font-size: 0.95rem;
+}
