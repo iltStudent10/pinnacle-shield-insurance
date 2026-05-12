@@ -1,253 +1,577 @@
 (function initQuotePage () {
-    var quoteForm = document.getElementById('quote-form');
+    var quoteForm = document.getElementById('quoteForm');
     if (!quoteForm) {
         return;
     }
 
-    var typeInput = document.getElementById('insuranceType');
-    var typeButtons = document.querySelectorAll('.type-option');
-    var stepDetails = document.getElementById('stepDetails');
-    var stepQuote = document.getElementById('stepQuote');
+    var typeRadios = document.querySelectorAll('input[name="insuranceType"]');
+    var typeSections = document.querySelectorAll('[data-type-section]');
+    var typeError = document.getElementById('typeError');
+    var step2Section = document.getElementById('step2Section');
     var quoteResults = document.getElementById('quoteResults');
+    var breakdownBody = document.getElementById('quoteBreakdownBody');
     var resultName = document.getElementById('resultName');
     var resultType = document.getElementById('resultType');
     var monthlyPremium = document.getElementById('monthlyPremium');
     var annualPremium = document.getElementById('annualPremium');
-    var baseRateInfo = document.getElementById('baseRateInfo');
-    var ageInfo = document.getElementById('ageInfo');
-    var yearInfo = document.getElementById('yearInfo');
-    var mileageInfo = document.getElementById('mileageInfo');
-    var coverageInfo = document.getElementById('coverageInfo');
-    var ageImpact = document.getElementById('ageImpact');
-    var yearImpact = document.getElementById('yearImpact');
-    var mileageImpact = document.getElementById('mileageImpact');
-    var coverageImpact = document.getElementById('coverageImpact');
     var resetQuoteBtn = document.getElementById('resetQuoteBtn');
-    var saveQuoteBtn = document.getElementById('saveQuoteBtn');
-    var compareQuotesBtn = document.getElementById('compareQuotesBtn');
-    var printQuoteBtn = document.getElementById('printQuoteBtn');
-    var savedQuotesList = document.getElementById('savedQuotesList');
-    var noSavedQuotes = document.getElementById('noSavedQuotesMsg');
 
-    var currentQuote = null;
-
-    function getBaseRate(type) {
-        if (type === 'home') {
-            return 68;
-        }
-        if (type === 'life') {
-            return 54;
-        }
-        return 75;
+    function toCurrency(value) {
+        return '$' + value.toFixed(2);
     }
 
-    function formatTypeLabel(type) {
-        if (type === 'home') {
-            return 'Home Insurance';
-        }
-        if (type === 'life') {
-            return 'Life Insurance';
-        }
-        return 'Auto Insurance';
+    function getSelectedType() {
+        var checked = document.querySelector('input[name="insuranceType"]:checked');
+        return checked ? checked.value : '';
     }
 
-    function setStepState(stepElement, active) {
-        if (!stepElement) {
+    function getCoverageValue(type) {
+        var checked = document.querySelector('input[name="' + type + 'Coverage"]:checked');
+        return checked ? checked.value : '';
+    }
+
+    function getCoverageMultiplier(coverage) {
+        if (coverage === 'basic') {
+            return 0.8;
+        }
+        if (coverage === 'premium') {
+            return 1.4;
+        }
+        return 1.0;
+    }
+
+    function getCoverageErrorEl(type) {
+        return document.getElementById(type + 'CoverageError');
+    }
+
+    function showError(inputEl, message) {
+        if (!inputEl) {
+            return;
+        }
+        inputEl.classList.add('is-invalid');
+
+        var feedback = inputEl.nextElementSibling;
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+            feedback.textContent = message;
+        }
+    }
+
+    function clearError(inputEl) {
+        if (!inputEl) {
+            return;
+        }
+        inputEl.classList.remove('is-invalid');
+
+        var feedback = inputEl.nextElementSibling;
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+            feedback.textContent = '';
+        }
+    }
+
+    function setTypeError(message) {
+        if (!typeError) {
             return;
         }
 
-        if (active) {
-            stepElement.classList.add('is-active');
-        } else {
-            stepElement.classList.remove('is-active');
-        }
-    }
-
-    function getImpactText(multiplier) {
-        if (multiplier === 1) {
-            return 'No impact (x1.0)';
-        }
-        if (multiplier > 1) {
-            return 'Higher rate (x' + multiplier.toFixed(2) + ')';
-        }
-        return 'Lower rate (x' + multiplier.toFixed(2) + ')';
-    }
-
-    function createSavedQuoteCard(quote) {
-        var col = document.createElement('div');
-        col.className = 'col-md-6 col-lg-4';
-
-        var card = document.createElement('article');
-        card.className = 'card border-0 shadow-sm h-100';
-
-        var body = document.createElement('div');
-        body.className = 'card-body';
-
-        var name = document.createElement('h3');
-        name.className = 'h6 mb-1';
-        name.textContent = quote.fullName;
-        
-        var type = document.createElement('p')
-        type.className = 'mb-1 text-muted';
-        type.textContent = quote.InsuranceTypeLabel;
-
-        var premium = document.createElement('p');
-        premium.className = 'mb-0 fw-semibold';
-        premium.textContent = '$' + quote.monthly.toFixed(2) + ' / month';
-
-        body.appendChild(name);
-        body.appendChild(type);
-        body.appendChild(premium);
-        card.appendChild(body);
-        col.appendChild(card);
-
-        return col;
-    }
-
-    function renderSavedQuotes() {
-        if (!savedQuotesList || !noSavedQuotesMsg) {
+        if (message) {
+            typeError.textContent = message;
+            typeError.classList.remove('hidden');
             return;
         }
 
-        var stored = localStorage.getItem('pinnacleSavedQuotes');
-        var quotes = stored ? JSON.parse(stored) : [];
+        typeError.textContent = '';
+        typeError.classList.add('hidden');
+    }
 
-        savedQuotesList.innerHTML = '';
-
-        if (!quotes.length) {
-            noSavedQuotesMsg.classList.remove('d-none');
+    function setCoverageError(type, message) {
+        var errorEl = getCoverageErrorEl(type);
+        if (!errorEl) {
             return;
         }
 
-        noSavedQuotesMsg.classList.add('d-none');
-        quotes.forEach(function (quote) {
-            savedQuotesList.appendChild(createSavedQuoteCard(quote));
+        if (message) {
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        errorEl.textContent = '';
+        errorEl.classList.add('hidden');
+    }
+
+    function clearAllErrors() {
+        quoteForm.querySelectorAll('.is-invalid').forEach(function (el) {
+            el.classList.remove('is-invalid');
+        });
+
+        quoteForm.querySelectorAll('.invalid-feedback').forEach(function (el) {
+            if (!el.id) {
+                el.textContent = '';
+            }
+        });
+
+        setTypeError('');
+        setCoverageError('auto', '');
+        setCoverageError('home', '');
+        setCoverageError('life', '');
+    }
+
+    function hideAllTypeSections() {
+        typeSections.forEach(function (section) {
+            section.classList.add('hidden');
         });
     }
 
-    typeButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
-            var selectedType = button.getAttribute('data-type');
-            typeInput.value = selectedType;
+    function showSelectedTypeSection(type) {
+        hideAllTypeSections();
 
-            typeButtons.forEach(function (item) {
-                item.classList.remove('is-selected');
-                item.setAttribute('aria-pressed', 'false');
-            });
+        if (!type) {
+            if (step2Section) {
+                step2Section.classList.add('hidden');
+            }
+            return;
+        }
 
-            button.classList.add('is-selected');
-            button.setAttribute('aria-pressed', 'true');
-            setStepState(stepDetails, true);
+        if (step2Section) {
+            step2Section.classList.remove('hidden');
+        }
+
+        var selectedSection = document.getElementById(type + '-fields');
+        if (selectedSection) {
+            selectedSection.classList.remove('hidden');
+        }
+    }
+
+    function handleTypeSelection(type) {
+        clearAllErrors();
+        showSelectedTypeSection(type);
+        quoteResults.classList.add('hidden');
+    }
+
+    function addBreakdownRow(tbody, factor, userValue, impact) {
+        var row = document.createElement('tr');
+        var factorCell = document.createElement('td');
+        var userCell = document.createElement('td');
+        var impactCell = document.createElement('td');
+
+        factorCell.textContent = factor;
+        userCell.textContent = userValue;
+        impactCell.textContent = impact;
+
+        row.appendChild(factorCell);
+        row.appendChild(userCell);
+        row.appendChild(impactCell);
+        tbody.appendChild(row);
+    }
+
+    function validateZipCode(zip) {
+        return /^\d{5}$/.test(zip);
+    }
+
+    function requireText(id, label, minLength) {
+        var input = document.getElementById(id);
+        var value = (input.value || '').trim();
+        clearError(input);
+
+        if (!value) {
+            showError(input, label + ' is required.');
+            return { valid: false, value: '' };
+        }
+
+        if (minLength && value.length < minLength) {
+            showError(input, label + ' must be at least ' + minLength + ' characters.');
+            return { valid: false, value: value };
+        }
+        return { valid: true, value: value };
+    }
+
+    function requireNumber(id, label, min, max) {
+        var input = document.getElementById(id);
+        var value = Number(input.value);
+        clearError(input);
+
+        if (input.value === '') {
+            showError(input, label + ' is required.');
+            return { valid: false, value: 0 };
+        }
+
+        if (Number.isNaN(value) || value < min || value > max) {
+            showError(input, label + ' must be between ' + min + ' and ' + max + '.');
+            return { valid: false, value: value };
+        }
+        return { valid: true, value: value };
+    }
+
+    function requireNumberMin(id, label, min) {
+        var input = document.getElementById(id);
+        var value = Number(input.value);
+        clearError(input);
+
+        if (input.value === '') {
+            showError(input, label + ' is required.');
+            return { valid: false, value: 0 };
+        }
+
+        if (Number.isNaN(value) || value < min) {
+            showError(input, label + ' must be at least ' + min + '.');
+            return { valid: false, value: value };
+        }
+        return { valid: true, value: value };
+    }
+
+    function requireSelect(id, label) {
+        var input = document.getElementById(id);
+        var value = input.value;
+        clearError(input);
+
+        if (!value) {
+            showError(input, label + ' is required.');
+            return { valid: false, value: '' };
+        }
+        return { valid: true, value: value };
+    }
+
+    function requireZip(id) {
+        var input = document.getElementById(id);
+        var value = (input.value || '').trim();
+        clearError(input);
+
+        if (!value) {
+            showError(input, 'Zip Code is required.');
+            return { valid: false, value: value };
+        }
+
+        if (!validateZipCode(value)) {
+            showError(input, 'Zip Code must be exactly 5 digits.');
+            return { valid: false, value: value };
+        }
+        return { valid: true, value: value };
+    }
+
+    function validateCoverage(type) {
+        var coverage = getCoverageValue(type);
+        setCoverageError(type, '');
+
+        if (!coverage) {
+            setCoverageError(type, 'Coverage level is required');
+            return { valid: false, value: '' };
+        }
+        return { valid: true, value: coverage };
+    }
+
+    function validateSmoker() {
+        var smoker = document.querySelector('input[name="smoker"]:checked');
+        setCoverageError('life', '');
+
+        if (!smoker) {
+            var smokerError = document.getElementById('smokerError');
+            if (smokerError) {
+                smokerError.textContent = 'Smoker selection is required.';
+                smokerError.classList.remove('hidden');
+            }
+            return { valid: false, value: '' };
+        }
+        var smokerErrorClear = document.getElementById('smokerError');
+        if (smokerErrorClear) {
+            smokerErrorClear.textContent = '';
+            smokerErrorClear.classList.add('hidden');
+        }
+        return { valid: true, value: smoker.value };
+    }
+
+    function getAutoQuoteData() {
+        var fullName = requireText('autoFullName', 'Full Name', 2);
+        var age = requireNumber('autoAge', 'Age', 16, 100);
+        var zipCode = requireZip('autoZip');
+        var vehicleYear = requireNumber('vehicleYear', 'Vehicle Year', 1990, 2026);
+        var vehicleMake = requireText('vehicleMake', 'Vehicle Make');
+        var vehicleModel = requireText('vehicleModel', 'Vehicle Model', 1);
+        var annualMileage = requireSelect('autoMileage', 'Annual Mileage');
+        var drivingRecord = requireSelect('drivingRecord', 'Driving Record');
+        var coverage = validateCoverage('auto');
+
+        var valid = fullName.valid && age.valid && zipCode.valid && vehicleYear.valid && vehicleMake.valid && vehicleModel.valid && annualMileage.valid && drivingRecord.valid && coverage.valid;
+
+        return {
+            valid: valid,
+            values : {
+                fullName: fullName.value,
+                age: age.value,
+                zipCode: zipCode.value,
+                vehicleYear: vehicleYear.value,
+                vehicleMake: vehicleMake.value,
+                vehicleModel: vehicleModel.value,
+                annualMileage: annualMileage.value,
+                drivingRecord: drivingRecord.value,
+                coverage: coverage.value
+            }
+        };
+    }
+
+    function getHomeQuoteData() {
+        var fullName = requireText('homeFullName', 'Full Name', 2);
+        var age = requireNumber('homeAge', 'Age', 18, 100);
+        var zipCode = requireZip('homeZip');
+        var homeValue = requireNumberMin('homeValue', 'Home Value', 50000);
+        var yearBuilt = requireNumber('yearBuilt', 'Year Built', 1900, 2026);
+        var squareFootage = requireNumberMin('squareFootage', 'Square Footage', 500, 10000);
+        var constructionType = requireSelect('constructionType', 'Construction Type');
+        var coverage = validateCoverage('home');
+
+        var valid = fullName.valid && age.valid && zipCode.valid && homeValue.valid && yearBuilt.valid && squareFootage.valid && constructionType.valid && coverage.valid;
+
+        return {
+            valid: valid,
+            values: {
+                fullName: fullName.value,
+                age: age.value,
+                zipCode: zipCode.value,
+                homeValue: homeValue.value,
+                yearBuilt: yearBuilt.value,
+                squareFootage: squareFootage.value,
+                constructionType: constructionType.value,
+                securitySystem: document.getElementById('securitySystem').checked,
+                fireSprinklers: document.getElementById('fireSprinklers').checked,
+                coverage: coverage.value
+            }
+        };
+    }
+
+    function getLifeQuoteData() {
+        var fullName = requireText('lifeFullName', 'Full Name', 2);
+        var age = requireNumber('lifeAge', 'Age', 18, 85);
+        var zipCode = requireZip('lifeZip');
+        var gender = requireSelect('gender', 'Gender');
+        var smoker = validateSmoker();
+        var coverageAmount = requireSelect('coverageAmount', 'Coverage Amount');
+        var exerciseFrequency = requireSelect('exerciseFrequency', 'Exercise Frequency');
+        var coverage = validateCoverage('life');
+
+        var valid = fullName.valid && age.valid && zipCode.valid && gender.valid && smoker.valid && coverageAmount.valid && exerciseFrequency.valid && coverage.valid;
+
+        return {
+            valid: valid,
+            values: {
+                fullName: fullName.value,
+                age: age.value,
+                zipCode: zipCode.value,
+                gender: gender.value,
+                smoker: smoker.value,
+                coverageAmount: Number(coverageAmount.value),
+                exerciseFrequency: exerciseFrequency.value,
+                preExistingConditions: document.getElementById('preExistingConditions').checked,
+                coverage: coverage.value
+            }
+        };
+    }
+
+    function getAutoFactors(values) {
+        var currentYear = 2026;
+        var vehicleAge = currentYear - values.vehicleYear;
+        var ageFactor = values.age < 25 ? 1.5 : values.age > 65 ? 1.3 : 1.0;
+        var vehicleAgeFactor = vehicleAge < 3? 1.3 : vehicleAge <= 10 ? 1.0 : 0.8;
+        var mileageMap = {
+            under5k: {factor: 0.8, label: 'Under 5,000'},
+            '5to10k': {factor: 1.0, label: '5,000-10,000'},
+            '10to15k': {factor: 1.1, label: '10,001-15,000'},
+            '15to20k': {factor: 1.3, label: '15,001-20,000'},
+            over20K: {factor: 1.5, label: 'Over 20,000'}
+        };
+
+        var drivingMap = {
+            clean: {factor: 1.0, label: 'Clean'},
+            '1ticket': {factor: 1.2, label: '1 Ticket'},
+            '2plus': {factor: 1.5, label: '2+ Tickets'},
+            accident: {factor: 1.8, label: 'Accident in Last 3 Years'}
+        };
+
+        var mileage = mileageMap[values.annualMileage];
+        var driving = drivingMap[values.drivingRecord];
+        var coverageFactor = getCoverageMultiplier(values.coverage);
+        var baseRate = 75;
+        var monthly = baseRate * ageFactor * vehicleAgeFactor * mileage.factor * driving.factor * coverageFactor;
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        return {
+            typeLabel: 'Auto Insurance',
+            monthly: monthly,
+            annual: monthly * 12,
+            breakdown: [
+                { factor: 'Base monthly rate', userValue: '$75.00', impact: 'Starting rate' },
+                { factor: 'Age factor', userValue: values.age + ' years', impact: 'x' + ageFactor.toFixed(2) },
+                { factor: 'Vehicle age factor', userValue: vehicleAge + ' years old', impact: 'x' + vehicleAgeFactor.toFixed(2) },
+                { factor: 'Mileage factor', userValue: mileage.label, impact: 'x' + mileage.factor.toFixed(2) },
+                { factor: 'Driving record', userValue: driving.label, impact: 'x' + driving.factor.toFixed(2) },
+                { factor: 'Coverage level', userValue: capitalize(values.coverage), impact: 'x' + coverageFactor.toFixed(2) }
+            ]
+        };
+    }
+
+    function getHomeFactors(values) {
+        var baseRate = (values.homeValue * 0.003) / 12;
+        var sizeMonthly = values.squareFootage * 0.01;
+        var yearBuiltFactor = values.yearBuilt < 1970 ? 1.4 : values.yearBuilt <= 1999 ? 1.1 : 1.0;
+        var constructionMap = {
+            wood: {factor: 1.2, label: 'Wood Frame'},
+            brick: {factor: 1.0, label: 'Brick'},
+            concrete: {factor: 0.9, label: 'Concrete'},
+            steel: {factor: 0.85, label: 'Steel'}
+        };
+
+        var construction = constructionMap[values.constructionType];
+        var securityFactor = values.securitySystem ? 0.95 : 1.0;
+        var sprinklerFactor = values.fireSprinklers ? 0.92 : 1.0;
+        var coverageFactor = getCoverageMultiplier(values.coverage);
+        var subtotal = baseRate + sizeMonthly;
+        var monthly = subtotal * yearBuiltFactor * construction.factor * securityFactor * sprinklerFactor * coverageFactor;
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        return {
+            typeLabel: 'Home Insurance',
+            monthly: monthly,
+            annual: monthly * 12,
+            breakdown: [
+                { factor: 'Base monthly rate', userValue: '$' + values.homeValue.toLocaleString() + ' home value', impact: toCurrency(baseRate) },
+                { factor: 'Size factor', userValue: values.squareFootage + ' sq ft', impact: '+ ' + toCurrency(sizeMonthly) },
+                { factor: 'Year built factor', userValue: String(values.yearBuilt), impact: 'x' + yearBuiltFactor.toFixed(2) },
+                { factor: 'Construction factor', userValue: construction.label, impact: 'x' + construction.factor.toFixed(2) },
+                { factor: 'Security discount', userValue: values.securitySystem ? 'Yes' : 'No', impact: 'x' + securityFactor.toFixed(2) },
+                { factor: 'Sprinkler discount', userValue: values.fireSprinklers ? 'Yes' : 'No', impact: 'x' + sprinklerFactor.toFixed(2) },
+                { factor: 'Coverage level', userValue: capitalize(values.coverage), impact: 'x' + coverageFactor.toFixed(2) }
+            ]
+        };
+    }
+
+    function getLifeFactors(values) {
+        var baseRate = (values.coverageAmount * 0.0005) / 12;
+        var ageFactor = values.age <= 30 ? 1.0 : values.age <= 45 ? 1.5 : values.age <= 60 ? 2.5 : 4.0;
+        var smokerFactor = values.smoker === 'yes' ? 2.0 : 1.0;
+        var exerciseMap = {
+            rarely: { factor: 1.3, label: 'Rarely' },
+            '1to2': { factor: 1.1, label: '1-2 times/week' },
+            '3to4': { factor: 1.0, label: '3-4 times/week' },
+            '5plus': { factor: 0.9, label: '5+ times/week' }
+        };
+
+        var genderMap = {
+            male: { factor: 1.0, label: 'Male' },
+            female: { factor: 1.0, label: 'Female' },
+            'non-binary': { factor: 1.05, label: 'Non-binary' }
+        };
+
+        var exercise = exerciseMap[values.exerciseFrequency];
+        var gender = genderMap[values.gender];
+        var preExistingFactor = values.preExistingConditions ? 1.5 : 1.0;
+        var coverageFactor = getCoverageMultiplier(values.coverage);
+        var monthly = baseRate * ageFactor * smokerFactor * exercise.factor * gender.factor * preExistingFactor * coverageFactor;
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        return {
+            typeLabel: 'Life Insurance',
+            monthly: monthly,
+            annual: monthly * 12,
+            breakdown: [
+                { factor: 'Base monthly rate', userValue: '$' + values.coverageAmount.toLocaleString() + ' coverage', impact: toCurrency(baseRate) },
+                { factor: 'Age factor', userValue: values.age + ' years', impact: 'x' + ageFactor.toFixed(2) },
+                { factor: 'Smoker factor', userValue: values.smoker === 'yes' ? 'Yes' : 'No', impact: 'x' + smokerFactor.toFixed(2) },
+                { factor: 'Exercise factor', userValue: exercise.label, impact: 'x' + exercise.factor.toFixed(2) },
+                { factor: 'Pre-existing conditions', userValue: values.preExistingConditions ? 'Yes' : 'No', impact: 'x' + preExistingFactor.toFixed(2) },
+                { factor: 'Gender factor', userValue: gender.label, impact: 'x' + gender.factor.toFixed(2) },
+                { factor: 'Coverage level', userValue: capitalize(values.coverage), impact: 'x' + coverageFactor.toFixed(2) }
+            ]
+        };
+    }
+
+    function renderResults(fullName, quoteData) {
+        resultName.textContent = fullName;
+        resultType.textContent = quoteData.typeLabel;
+        monthlyPremium.textContent = toCurrency(quoteData.monthly);
+        annualPremium.textContent = toCurrency(quoteData.annual);
+
+        breakdownBody.innerHTML = '';
+        quoteData.breakdown.forEach(function (row) {
+            addBreakdownRow(breakdownBody, row.factor, row.userValue, row.impact);
+        });
+
+        quoteResults.classList.remove('hidden');
+        quoteResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    typeRadios.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            handleTypeSelection(this.value);
+        });
+
+        radio.addEventListener('click', function () {
+            handleTypeSelection(this.value);
         });
     });
 
     quoteForm.addEventListener('submit', function (e) {
         e.preventDefault();
+        clearAllErrors();
 
-        if (!quoteForm.checkValidity()) {
-            quoteForm.classList.add('was-validated');
+        var selectedType = getSelectedType();
+        if (!selectedType) {
+            setTypeError('Please select an insurance type.');
             return;
         }
 
-        var fullName = (document.getElementById('fullName').value || '').trim();
-        var age = Number(document.getElementById('age').value || 0);
-        var year = Number(document.getElementById('vehicleYear').value || 0);
-        var mileage = document.getElementById('annualMileage').value;
-        var coverage = document.getElementById('coverageLevel').value;
-        var type = typeInput.value;
+        var quoteInput;
+        var quoteData;
 
-        if (!type) {
+        if (selectedType === 'auto') {
+            quoteInput = getAutoQuoteData();
+            if (!quoteInput.valid) {
+                return;
+            }
+            quoteData = getAutoFactors(quoteInput.values);
+            renderResults(quoteInput.values.fullName, quoteData);
             return;
         }
 
-        var ageMultiplier = age < 25 ? 1.25 : age > 65 ? 1.15 : 1.0;
-        var yearMultiplier = year < 2015 ? 1.12 : 1.0;
-        var mileageMultiplier = mileage === 'high' ? 1.18 : mileage === 'low' ? 0.93 : 1.0;
-        var coverageMultiplier = coverage === 'premium' ? 1.35 : coverage === 'basic' ? 0.88 : 1.0;
+        if (selectedType === 'home') {
+            quoteInput = getHomeQuoteData();
+            if (!quoteInput.valid) {
+                return;
+            }
+            quoteData = getHomeFactors(quoteInput.values);
+            renderResults(quoteInput.values.fullName, quoteData);
+            return;
+        }
 
-        var baseRate = getBaseRate(type);
-        var monthly = baseRate * ageMultiplier * yearMultiplier * mileageMultiplier * coverageMultiplier;
-        var annual = monthly * 12;
-
-        var insuranceTypeLabel = formatTypeLabel(type);
-        var coverageLabel = coverage.charAt(0).toUpperCase() + coverage.slice(1) + ' coverage';
-        var mileageLabel = mileage === 'high' ? '10,000+ high mileage' : mileage === 'low' ? 'Under 5,000 low mileage' : '5,000-10,000 standard';
-
-        currentQuote = {
-            fullName: fullName,
-            insuranceTypeLabel: insuranceTypeLabel,
-            monthly: monthly,
-            annual: annual
-        };
-
-        resultName.textContent = fullName;
-        resultType.textContent = insuranceTypeLabel;
-        monthlyPremium.textContent = '$' + monthly.toFixed(2);
-        annualPremium.textContent = '$' + annual.toFixed(2);
-
-        baseRateInfo.textContent = '$' + baseRate.toFixed(2) + '/month';
-        ageInfo.textContent = age + ' years old';
-        yearInfo.textContent = year + ' model year';
-        mileageInfo.textContent = mileageLabel;
-        coverageInfo.textContent = coverageLabel;
-
-        ageImpact.innerHTML = '<strong>' + getImpactText(ageMultiplier) + '</strong>';
-        yearImpact.innerHTML = '<strong>' + getImpactText(yearMultiplier) + '</strong>';
-        mileageImpact.innerHTML = '<strong>' + getImpactText(mileageMultiplier) + '</strong>';
-        coverageImpact.innerHTML = '<strong>' + getImpactText(coverageMultiplier) + '</strong>';
-
-        setStepState(stepQuote, true);
-        quoteResults.classList.remove('d-none');
-        quoteResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        quoteInput = getLifeQuoteData();
+        if (!quoteInput.valid) {
+            return;
+        }
+        quoteData = getLifeFactors(quoteInput.values);
+        renderResults(quoteInput.values.fullName, quoteData);
+        return;
     });
 
     quoteForm.addEventListener('reset', function () {
-        typeButtons.forEach(function (item) {
-            item.classList.remove('is-selected');
-            item.setAttribute('aria-pressed', 'false');
-        });
-
-        quoteForm.classList.remove('was-validated');
-        typeInput.value = '';
-        setStepState(stepDetails, false);
-        setStepState(stepQuote, false);
-        quoteResults.classList.add('d-none');
-        currentQuote = null;
+        clearAllErrors();
+        showSelectedTypeSection('');
+        quoteResults.classList.add('hidden');
     });
 
     if (resetQuoteBtn) {
         resetQuoteBtn.addEventListener('click', function () {
             quoteForm.reset();
-            quoteResults.classList.add('d-none');
+            clearAllErrors();
+            showSelectedTypeSection('');
+            quoteResults.classList.add('hidden');
         });
     }
 
-    if (saveQuoteBtn) {
-        saveQuoteBtn.addEventListener('click', function () {
-            if (!currentQuote) {
-                return;
-            }
-
-            var stored = localStorage.getItem('pinnacleSavedQuotes');
-            var quotes = stored ? JSON.parse(stored) : [];
-            quotes.unshift(currentQuote);
-            quotes = quotes.slice(0, 6);
-            localStorage.setItem('pinnacleSavedQuotes', JSON.stringify(quotes));
-            renderSavedQuotes();
-        });
-    }
-
-    if (compareQuotesBtn) {
-        compareQuotesBtn.addEventListener('click', function () {
-            document.getElementById('savedQuotesSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-    }
-
-    if (printQuoteBtn) {
-        printQuoteBtn.addEventListener('click', function () {
-            window.print();
-        });
-    }
-
-    renderSavedQuotes();
+    showSelectedTypeSection(getSelectedType());
 })();

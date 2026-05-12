@@ -75,6 +75,10 @@ footer p {
     margin: 0 auto;
 }
 
+.hidden {
+    display: none;
+}
+
 .quote-steps {
     display: flex;
     align-items: center;
@@ -156,6 +160,32 @@ footer p {
 
 .type-option.is-selected {
     box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+}
+
+.type-card-option {
+    border: 1px solid #d4d9df;
+    border-radius: 0.6rem;
+    min-height: 88px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    background: #fff;
+}
+
+.type-emoji {
+    font-size: 1.25rem;
+}
+
+.type-label {
+    font-size: 1rem;
+}
+
+.btn-check:checked + .type-card-option {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+    color: #0d6efd;
 }
 
 .quote-results {
