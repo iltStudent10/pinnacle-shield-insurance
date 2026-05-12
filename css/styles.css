@@ -61,3 +61,136 @@ footer p {
         margin-bottom: 0.5rem;
     }
 }
+
+.quote-page {
+    min-height: 70vh;
+}
+
+.quote-layout {
+    max-width: 980ox;
+}
+
+.quote-subtitle {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.quote-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+    color: #6c757d;
+}
+
+.step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    background-color: #dfe3e8;
+    border: 2px solid #d8e3e8;
+}
+
+.step-label {
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.step-line {
+    width: 40px;
+    height: 2px;
+    background-color: #d7dbe0;
+}
+
+.step-item.is-active {
+    color: #0d6efd;
+}
+
+.step-item.is-active .step-circle {
+    background-color: #0d6efd;
+    border-color:#8eb8ff;
+    color: #fff;
+}
+
+.type-option {
+    width: 100%;
+    border: 1px solid #d4d9df;
+    border-radius: 0.6rem;
+    background: #fff;
+    min-height: 84px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.type-option:hover {
+    transform: translateY(-2px);
+}
+
+.type-option-auto {
+    border-color: #60a5fa;
+    color: #0d6efd;
+}
+
+.type-option-home {
+    border-color: #34d399;
+    color: #0f9d58;
+}
+
+.type-option-life {
+    border-color: #fb7185;
+    color: #e11d48;
+}
+
+.type-option.is-selected {
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+}
+
+.quote-results {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.quote-summary-card {
+    background-color: #fff;
+}
+
+.quote-price {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+#savedQuotesList .card {
+    text-align: left;
+}
+
+@media (max-width: 767.98px) {
+    .quote-steps {
+        gap: 0.4rem;
+    }
+
+    .step-item {
+        min-width: 90px;
+    }
+
+    .step-line {
+        width: 40px;
+    }
+
+    .quote-price {
+        font-size: 1.8rem;
+    }
+}
