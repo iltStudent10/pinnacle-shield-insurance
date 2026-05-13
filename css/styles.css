@@ -298,3 +298,64 @@ footer p {
         min-height: 44px;
     }
 }
+
+/* ===Bonus: Animated Transitions === */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.quote-results {
+    animation: fadeInUp 0.55s ease both;
+}
+
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.saved-quotes-section .card {
+    animation: cardEntrance 0.3s ease both;
+}
+
+@media print {
+    .navbar,
+    footer,
+    .card.border-0.shadow-sm,
+    #savedQuotesSection,
+    #quoteSpinner,
+    .btn {
+        display: none !important;
+    }
+
+    #quoteResults {
+        display: block !important;
+    }
+
+    body {
+        color: #000;
+        background: #fff;
+    }
+
+    .quote-summary-head {
+        background-color: #0056b3 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .quote-price {
+        color: #000 !important;
+    }
+}

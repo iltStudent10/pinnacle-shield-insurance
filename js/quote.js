@@ -15,6 +15,24 @@
     var monthlyPremium = document.getElementById('monthlyPremium');
     var annualPremium = document.getElementById('annualPremium');
     var resetQuoteBtn = document.getElementById('resetQuoteBtn');
+    var quoteSpinner = document.getElementById('quoteSpinner');
+    var saveQuoteBtn = document.getElementById('saveQuoteBtn');
+    var printQuoteBtn = document.getElementById('printQuoteBtn');
+    var savedQuotesSection = document.getElementById('savedQuotesSection');
+    var savedQuotesList = document.getElementById('savedQuotesList');
+    var lastQuote = null;
+
+    function showSpinner() {
+        if (quoteSpinner) {
+            quoteSpinner.classList.remove('hidden');
+        }
+    }
+
+    function hideSpinner() {
+        if (quoteSpinner) {
+            quoteSpinner.classList.add('hidden');
+        }
+    }
 
     function toCurrency(value) {
         return '$' + value.toFixed(2);
@@ -502,7 +520,12 @@
             addBreakdownRow(breakdownBody, row.factor, row.userValue, row.impact);
         });
 
+        lastQuote = { fullName: fullName, quoteData: quoteData };
+
         quoteResults.classList.remove('hidden');
+        quoteResults.style.animation = 'none';
+        quoteResults.offsetHeight; // Trigger reflow to restart animation
+        quoteResults.style.animation = '';
         quoteResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -516,6 +539,82 @@
         });
     });
 
+    function saveCurrentQuote() {
+        if (!lastQuote) {
+            return;
+        }
+
+        var quotes = JSON.parse(localStorage.getItem('savedQuotes')) || [];
+        quotes.push({
+            id: Date.now(),
+            fullName: lastQuote.fullName,
+            typeLabel: lastQuote.quoteData.typeLabel,
+            monthly: lastQuote.quoteData.monthly,
+            annual: lastQuote.quoteData.annual,
+            savedAt: new Date().toLocaleDateString()
+        });
+        localStorage.setItem('savedQuotes', JSON.stringify(quotes));
+        renderSavedQuotes();
+    }
+
+    function deleteCurrentQuote(index) {
+        var quotes = JSON.parse(localStorage.getItem('savedQuotes')) || [];
+        quotes.splice(index, 1);
+        localStorage.setItem('savedQuotes', JSON.stringify(quotes));
+        renderSavedQuotes();
+    }
+
+    function renderSavedQuotes() {
+        if(!savedQuotesSection || !savedQuotesList) {
+            return;
+        }
+
+        var quotes = JSON.parse(localStorage.getItem('savedQuotes')) || [];
+        if(quotes.length === 0) {
+            savedQuotesSection.classList.add('hidden');
+            return;
+        }
+
+        savedQuotesSection.classList.remove('hidden');
+        savedQuotesList.innerHTML = '';
+
+        quotes.forEach(function(q, index) {
+            var card = document.createElement('div');
+            card.className = 'card mb-2 shadow-sm';
+
+            var cardBody = document.createElement('div');
+            cardBody.className = 'card-body d-flex justify-content-between align-items-center flex-wrap gap-2';
+
+            var infoDiv = document.createElement('div');
+            var strong = document.createElement('strong');
+            strong.textContent = q.typeLabel;
+            infoDiv.appendChild(strong);
+            infoDiv.appendChild(document.createTextNode(' - '));
+            infoDiv.appendChild(document.createTextNode(q.fullName));
+            infoDiv.appendChild(document.createElement('br'));
+
+            var small = document.createElement('small');
+            small.className = 'text-muted';
+            small.textContent = 'Monthly: $' + Number(q.monthly).toFixed(2) +
+                ' | Annual: $' + Number(q.annual).toFixed(2) +
+                ' | Saved on: ' + q.savedAt;
+            infoDiv.appendChild(small);
+
+            var deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-sm btn-outline-danger';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.dataset.index = String(index);
+            deleteBtn.addEventListener('click', function() {
+                deleteCurrentQuote(Number(this.dataset.index));
+            });
+
+            cardBody.appendChild(infoDiv);
+            cardBody.appendChild(deleteBtn);
+            card.appendChild(cardBody);
+            savedQuotesList.appendChild(card);
+        });
+    }
+
     quoteForm.addEventListener('submit', function (e) {
         e.preventDefault();
         clearAllErrors();
@@ -528,6 +627,7 @@
 
         var quoteInput;
         var quoteData;
+        var fullName;
 
         if (selectedType === 'auto') {
             quoteInput = getAutoQuoteData();
@@ -535,33 +635,35 @@
                 return;
             }
             quoteData = getAutoFactors(quoteInput.values);
-            renderResults(quoteInput.values.fullName, quoteData);
-            return;
-        }
-
-        if (selectedType === 'home') {
+            fullName = quoteInput.values.fullName;
+        } else if (selectedType === 'home') {
             quoteInput = getHomeQuoteData();
             if (!quoteInput.valid) {
                 return;
             }
             quoteData = getHomeFactors(quoteInput.values);
-            renderResults(quoteInput.values.fullName, quoteData);
-            return;
+            fullName = quoteInput.values.fullName;
+        } else {
+            quoteInput = getLifeQuoteData();
+            if (!quoteInput.valid) {
+                return;
+            }
+            quoteData = getLifeFactors(quoteInput.values);
+            fullName = quoteInput.values.fullName;
         }
 
-        quoteInput = getLifeQuoteData();
-        if (!quoteInput.valid) {
-            return;
-        }
-        quoteData = getLifeFactors(quoteInput.values);
-        renderResults(quoteInput.values.fullName, quoteData);
-        return;
+        showSpinner();
+        setTimeout(function() {
+            hideSpinner();
+            renderResults(fullName, quoteData);
+        }, 1200);
     });
 
     quoteForm.addEventListener('reset', function () {
         clearAllErrors();
         showSelectedTypeSection('');
         quoteResults.classList.add('hidden');
+        hideSpinner();
     });
 
     if (resetQuoteBtn) {
@@ -570,8 +672,20 @@
             clearAllErrors();
             showSelectedTypeSection('');
             quoteResults.classList.add('hidden');
+            hideSpinner();
         });
     }
 
+    if(saveQuoteBtn) {
+        saveQuoteBtn.addEventListener('click', saveCurrentQuote)
+    }
+
+    if(printQuoteBtn) {
+        printQuoteBtn.addEventListener('click', function() {
+            window.print();
+        });
+    }
+
+    renderSavedQuotes();
     showSelectedTypeSection(getSelectedType());
 })();
