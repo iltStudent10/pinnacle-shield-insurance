@@ -5,7 +5,7 @@
     }
 
     var typeRadios = document.querySelectorAll('input[name="insuranceType"]');
-    var typeSections = document.querySelectorAll('[data-type-section]');
+    var typeSections = document.querySelectorAll('[data-type-selection]');
     var typeError = document.getElementById('typeError');
     var step2Section = document.getElementById('step2Section');
     var quoteResults = document.getElementById('quoteResults');
@@ -667,7 +667,8 @@
 
     quoteForm.addEventListener('reset', function () {
         clearAllErrors();
-        showSelectedTypeSection('');
+        hideAllTypeSections();
+        if (step2Section) step2Section.classList.add('hidden');
         quoteResults.classList.add('hidden');
         hideSpinner();
     });
@@ -676,7 +677,8 @@
         resetQuoteBtn.addEventListener('click', function () {
             quoteForm.reset();
             clearAllErrors();
-            showSelectedTypeSection('');
+            hideAllTypeSections();
+            if (step2Section) step2Section.classList.add('hidden');
             quoteResults.classList.add('hidden');
             hideSpinner();
         });
