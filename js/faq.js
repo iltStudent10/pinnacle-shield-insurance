@@ -1,5 +1,5 @@
 (function initFaqSearch() {
-    var searchInput = document.getElementById('faqSearch');
+    var searchInput = document.getElementById('faq-search');
     if (!searchInput) {
         return;
     }
