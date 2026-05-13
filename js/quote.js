@@ -196,8 +196,14 @@
             return { valid: false, value: '' };
         }
 
-        if (minLength && value.length < minLength) {
-            showError(input, label + ' must be at least ' + minLength + ' characters.');
+        // Only allow letters and spaces for name fields
+        if (id.endsWith('FullName') && !/^[A-Za-z\s]+$/.test(value)) {
+            showError(input, label + ' must contain only letters.');
+            return { valid: false, value: value };
+        }
+
+        if (minLength && value.replace(/[^A-Za-z]/g, '').length < minLength) {
+            showError(input, label + ' must be at least ' + minLength + ' letters.');
             return { valid: false, value: value };
         }
         return { valid: true, value: value };
