@@ -24,5 +24,23 @@ Pinnacle Shield Insurance is a professional, responsive website for an insurance
 - **Bootstrap 5.3.2** - Responsive CSS framework and components
 - **Flexbox & Grid** - Modern CSS layout techniques for responsive design
 
+## Setup Instructions
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/iltStudent10/pinnacle-shield-insurance
+    ```
+2. Open the project in your browser:
+    - Option A: Open `index.html` directly.
+    - Option B: Use VS Code Live Server (recommended for local development).
+
+## Usage
+1. Start at `index.html` to view the homepage and site navigation.
+2. Go to `quote.html` to generate insurance quotes:
+    - Select insurance type (Auto, Home, or Life).
+    - Complete the displayed form fields.
+    - Click **Calculate Quote** to view monthly and annual premium estimates.
+3. Use the quote actions to reset, save, delete, or print quote results.
+4. Visit `about.html` for company information and `faq.html` for searchable FAQs.
+
 ## Author
 Michaela Peterson / Michaela Brown
