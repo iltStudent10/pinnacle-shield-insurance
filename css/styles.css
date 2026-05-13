@@ -1,7 +1,35 @@
+/* Utility class for mint text color */
+.text-mint {
+    color: var(--brand-mint-dark) !important;
+}
+/* FAQ accordion active/selected style */
+.accordion-item.active,
+.accordion-item.show,
+.accordion-button:not(.collapsed) {
+    background-color: var(--brand-mint) !important;
+    color: var(--brand-black) !important;
+    border-color: var(--brand-mint-dark) !important;
+}
+/* Pastel mint style for primary button */
+.btn-primary,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary:hover {
+    background-color: var(--brand-mint) !important;
+    border-color: var(--brand-mint-dark) !important;
+    color: var(--brand-black) !important;
+    box-shadow: none;
+}
+/* Utility class for pastel mint background */
+.mint-bg {
+    background-color: var(--brand-mint) !important;
+    color: var(--brand-black) !important;
+}
 :root {
-    --brand-blue: #0056b3;
-    --brand-blue-dark: #0a3d80;
-    --surface-muted: #f2f6fa;
+    --brand-mint: #a8f5c0; /* pastel mint */
+    --brand-mint-dark: #5fd39e; /* deeper mint */
+    --brand-black: #111111;
+    --surface-muted: #eafaf1; /* lighter mint background */
 }
 
 *, *::before, *::after {
@@ -15,10 +43,11 @@ body {
 }
 
 .hero {
-    padding: 3.5rem, 0;
+    padding: 3.5rem 0;
     min-height: 360px;
-    background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark));
+    background: linear-gradient(135deg, var(--brand-mint), var(--brand-mint-dark));
     text-align: center;
+    color: var(--brand-black);
 }
 
 .tagline {
@@ -36,11 +65,13 @@ body {
 
 .type-card {
     background-color: var(--surface-muted);
-    border: 1px solid #d8e3ef;
+    border: 1px solid #b2e9d3;
+    color: var(--brand-black);
 }
 
 footer {
-    background-color: #212529;
+    background-color: var(--brand-black);
+    color: var(--brand-mint);
 }
 
 footer p {
@@ -92,7 +123,7 @@ footer p {
     flex-direction: column;
     align-items: center;
     min-width: 120px;
-    color: #6c757d;
+    color: var(--brand-black);
 }
 
 .step-circle {
@@ -103,8 +134,9 @@ footer p {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    background-color: #dfe3e8;
-    border: 2px solid #d8e3e8;
+    background-color: var(--brand-mint);
+    border: 2px solid var(--brand-mint-dark);
+    color: var(--brand-black);
 }
 
 .step-label {
@@ -120,12 +152,12 @@ footer p {
 }
 
 .step-item.is-active {
-    color: #0d6efd;
+    color: var(--brand-mint-dark);
 }
 
 .step-item.is-active .step-circle {
-    background-color: #0d6efd;
-    border-color:#8eb8ff;
+    background-color: var(--brand-mint-dark);
+    border-color: var(--brand-mint);
     color: #fff;
 }
 
@@ -144,13 +176,13 @@ footer p {
 }
 
 .type-option-auto {
-    border-color: #60a5fa;
-    color: #0d6efd;
+    border-color: var(--brand-mint-dark);
+    color: var(--brand-mint-dark);
 }
 
 .type-option-home {
-    border-color: #34d399;
-    color: #0f9d58;
+    border-color: var(--brand-mint);
+    color: var(--brand-black);
 }
 
 .type-option-life {
@@ -159,7 +191,7 @@ footer p {
 }
 
 .type-option.is-selected {
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+    box-shadow: 0 0 0 3px rgba(88, 239, 180, 0.2);
 }
 
 .type-card-option {
@@ -183,9 +215,9 @@ footer p {
 }
 
 .btn-check:checked + .type-card-option {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
-    color: #0d6efd;
+    border-color: var(--brand-mint-dark);
+    box-shadow: 0 0 0 3px rgba(88, 239, 180, 0.2);
+    color: var(--brand-mint-dark);
 }
 
 .quote-results {
@@ -195,6 +227,7 @@ footer p {
 
 .quote-summary-card {
     background-color: #fff;
+    color: var(--brand-black);
 }
 
 .quote-price {
@@ -247,10 +280,11 @@ footer p {
     align-items: center;
     gap: 0.4rem;
     padding: 0.7rem 1rem;
-    border: 1px solid #d8e3ef;
+    border: 1px solid var(--brand-mint-dark);
     border-radius: 999px;
-    background: #fff;
+    background: var(--surface-muted);
     font-weight: 600;
+    color: var(--brand-black);
 }
 
 .faq-container {
@@ -345,12 +379,12 @@ footer p {
     }
 
     body {
-        color: #000;
-        background: #fff;
+        color: var(--brand-black);
+        background: var(--surface-muted);
     }
 
     .quote-summary-head {
-        background-color: #0056b3 !important;
+        background-color: var(--brand-mint-dark) !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
