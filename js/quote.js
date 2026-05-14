@@ -719,6 +719,11 @@
     quoteForm.addEventListener('reset', function () {
         clearAllErrors();
         hideAllTypeSections();
+        if (typeRadios && typeRadios.length) {
+            typeRadios.forEach(function(radio) {
+                radio.checked = false;
+            });
+        }
         if (step2Section) step2Section.classList.add('hidden');
         quoteResults.classList.add('hidden');
         hideSpinner();
@@ -730,6 +735,11 @@
             quoteForm.reset();
             clearAllErrors();
             hideAllTypeSections();
+            if (typeRadios && typeRadios.length) {
+                typeRadios.forEach(function(radio) {
+                    radio.checked = false;
+                });
+            }
             if (step2Section) step2Section.classList.add('hidden');
             quoteResults.classList.add('hidden');
             hideSpinner();
