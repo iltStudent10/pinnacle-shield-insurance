@@ -1,4 +1,18 @@
 (function initQuotePage () {
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    var typeFromUrl = getQueryParam('type');
+    if (typeFromUrl === 'auto' || typeFromUrl === 'home' || typeFromUrl === 'life') {
+        var radio = document.querySelector('input[name="insuranceType"][value="' + typeFromUrl + '"]');
+        if (radio) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+
     var quoteForm = document.getElementById('quoteForm');
     if (!quoteForm) {
         return;
