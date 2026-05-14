@@ -45,6 +45,29 @@
                 </p>
             </div>
 
+            <!-- Progress Indicator -->
+            <div id="formProgressContainer" class="mb-4">
+                <div class="d-flex justify-content-center align-items-center mb-2 gap-2 flex-wrap">
+                    <div class="step-item" id="step-indicator-1">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Select Type</div>
+                    </div>
+                    <div class="step-line d-none d-md-block"></div>
+                    <div class="step-item" id="step-indicator-2">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Enter Details</div>
+                    </div>
+                    <div class="step-line d-none d-md-block"></div>
+                    <div class="step-item" id="step-indicator-3">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Review & Calculate</div>
+                    </div>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div id="formProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+
             <section class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-4 md-5">
                     <h2 class="h4 mb-3">Step 1: Choose Insurance Type</h2>

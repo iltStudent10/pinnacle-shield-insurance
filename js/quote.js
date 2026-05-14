@@ -1,4 +1,30 @@
 (function initQuotePage () {
+        var stepIndicators = [
+            document.getElementById('step-indicator-1'),
+            document.getElementById('step-indicator-2'),
+            document.getElementById('step-indicator-3')
+        ];
+        var progressBar = document.getElementById('formProgressBar');
+
+        function setStepActive(step) {
+            stepIndicators.forEach(function(el, idx) {
+                if (!el) return;
+                if (idx === step - 1) {
+                    el.classList.add('is-active');
+                } else {
+                    el.classList.remove('is-active');
+                }
+            });
+            if (progressBar) {
+                var percent = 33;
+                if (step === 2) percent = 66;
+                if (step === 3) percent = 100;
+                progressBar.style.width = percent + '%';
+                progressBar.setAttribute('aria-valuenow', percent);
+            }
+        }
+
+        setStepActive(1);
     function getQueryParam(name) {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(name);
@@ -178,6 +204,7 @@
         clearAllErrors();
         showSelectedTypeSection(type);
         quoteResults.classList.add('hidden');
+        setStepActive(type ? 2 : 1);
     }
 
     function addBreakdownRow(tbody, factor, userValue, impact) {
@@ -210,7 +237,6 @@
             return { valid: false, value: '' };
         }
 
-        // Only allow letters and spaces for name fields
         if (id.endsWith('FullName') && !/^[A-Za-z\s]+$/.test(value)) {
             showError(input, label + ' must contain only letters.');
             return { valid: false, value: value };
@@ -544,7 +570,7 @@
 
         quoteResults.classList.remove('hidden');
         quoteResults.style.animation = 'none';
-        quoteResults.offsetHeight; // Trigger reflow to restart animation
+        quoteResults.offsetHeight;
         quoteResults.style.animation = '';
         quoteResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -642,6 +668,7 @@
         var selectedType = getSelectedType();
         if (!selectedType) {
             setTypeError('Please select an insurance type.');
+            setStepActive(1);
             return;
         }
 
@@ -652,6 +679,7 @@
         if (selectedType === 'auto') {
             quoteInput = getAutoQuoteData();
             if (!quoteInput.valid) {
+                setStepActive(2);
                 return;
             }
             quoteData = getAutoFactors(quoteInput.values);
@@ -659,6 +687,7 @@
         } else if (selectedType === 'home') {
             quoteInput = getHomeQuoteData();
             if (!quoteInput.valid) {
+                setStepActive(2);
                 return;
             }
             quoteData = getHomeFactors(quoteInput.values);
@@ -666,11 +695,14 @@
         } else {
             quoteInput = getLifeQuoteData();
             if (!quoteInput.valid) {
+                setStepActive(2);
                 return;
             }
             quoteData = getLifeFactors(quoteInput.values);
             fullName = quoteInput.values.fullName;
         }
+
+        setStepActive(3);
 
         showSpinner();
         setTimeout(function() {
@@ -685,6 +717,7 @@
         if (step2Section) step2Section.classList.add('hidden');
         quoteResults.classList.add('hidden');
         hideSpinner();
+        setStepActive(1);
     });
 
     if (resetQuoteBtn) {
@@ -695,6 +728,7 @@
             if (step2Section) step2Section.classList.add('hidden');
             quoteResults.classList.add('hidden');
             hideSpinner();
+            setStepActive(1);
         });
     }
 
